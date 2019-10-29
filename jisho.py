@@ -137,5 +137,6 @@ class Jisho(collections.abc.MutableSet):
         return self._by_kanji.get(kanji, set())
 
 
-tree = ElementTree.parse('JMdict_e.xml')
-jisho = Jisho(Entry.from_node(node) for node in tree.getroot())
+if __name__ == '__main__':
+    tree = ElementTree.parse('JMdict_e.xml')
+    jisho = Jisho(Entry.from_node(node) for node in tree.getroot())

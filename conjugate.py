@@ -1,8 +1,108 @@
 import string
 
+from . import jisho
+
 
 class ConjugationError(Exception):
-    pass
+    def __init__(self, form, verb):
+        message = 'Unable to conjugate {} form of {}'.format(form, verb)
+        super().__init__(message)
+
+
+class Verb(jisho.Entry):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ordered by most to least commonly used
+        verb_types = (
+            'godan verb', 'ichidan verb', 'kuru verb', 'suru verb', 'su verb',
+            'nidan verb', 'yodan verb'
+            )
+        self.type = None
+        for pos in self.parts_of_speech:
+            for vt in verb_types:
+                if vt in pos:
+                    self.type = vt
+                    break
+            if self.type is not None:
+                break
+
+    @classmethod
+    def from_entry(cls, entry):
+        values = vars(entry)
+        return cls(**values)
+
+    def conjugate(self, vowel):
+        ending = self.reading[-1]
+        replacement = self._u_conjugated[(ending, vowel)]
+        return str(self)[:-1] + replacement
+
+    _u_conjugated = {
+        ('う', 'あ'): 'あ',
+        ('う', 'え'): 'え',
+        ('う', 'い'): 'い',
+        ('う', 'お'): 'お',
+        ('う', 'う'): 'う',
+        ('く', 'あ'): 'か',
+        ('く', 'え'): 'け',
+        ('く', 'い'): 'き',
+        ('く', 'お'): 'こ',
+        ('く', 'う'): 'く',
+        ('ぐ', 'あ'): 'が',
+        ('ぐ', 'え'): 'げ',
+        ('ぐ', 'い'): 'ぎ',
+        ('ぐ', 'お'): 'ご',
+        ('ぐ', 'う'): 'ぐ',
+        ('す', 'あ'): 'さ',
+        ('す', 'え'): 'せ',
+        ('す', 'い'): 'し',
+        ('す', 'お'): 'そ',
+        ('す', 'う'): 'す',
+        ('ず', 'あ'): 'ざ',
+        ('ず', 'え'): 'ぜ',
+        ('ず', 'い'): 'じ',
+        ('ず', 'お'): 'ぞ',
+        ('ず', 'う'): 'ず',
+        ('つ', 'あ'): 'た',
+        ('つ', 'え'): 'て',
+        ('つ', 'い'): 'ち',
+        ('つ', 'お'): 'と',
+        ('つ', 'う'): 'つ',
+        ('づ', 'あ'): 'だ',
+        ('づ', 'え'): 'で',
+        ('づ', 'い'): 'ぢ',
+        ('づ', 'お'): 'ど',
+        ('づ', 'う'): 'づ',
+        ('ぬ', 'あ'): 'な',
+        ('ぬ', 'え'): 'ね',
+        ('ぬ', 'い'): 'に',
+        ('ぬ', 'お'): 'の',
+        ('ぬ', 'う'): 'ぬ',
+        ('ふ', 'あ'): 'は',
+        ('ふ', 'え'): 'へ',
+        ('ふ', 'い'): 'ひ',
+        ('ふ', 'お'): 'ほ',
+        ('ふ', 'う'): 'ふ',
+        ('ぶ', 'あ'): 'ば',
+        ('ぶ', 'え'): 'べ',
+        ('ぶ', 'い'): 'び',
+        ('ぶ', 'お'): 'ぼ',
+        ('ぶ', 'う'): 'ぶ',
+        ('ぷ', 'あ'): 'ぱ',
+        ('ぷ', 'え'): 'ぺ',
+        ('ぷ', 'い'): 'ぴ',
+        ('ぷ', 'お'): 'ぽ',
+        ('ぷ', 'う'): 'ぷ',
+        ('む', 'あ'): 'ま',
+        ('む', 'え'): 'め',
+        ('む', 'い'): 'み',
+        ('む', 'お'): 'も',
+        ('む', 'う'): 'む',
+        ('る', 'あ'): 'ら',
+        ('る', 'え'): 'れ',
+        ('る', 'い'): 'り',
+        ('る', 'お'): 'ろ',
+        ('る', 'う'): 'る'
+        }
 
 
 _rmj_to_hrgn = {
@@ -37,74 +137,6 @@ _rmj_to_hrgn = {
     }
 
 _hrgn_to_rmj = {h: r for r, h in _rmj_to_hrgn.items()}
-
-_u_conjugated = {
-    ('う', 'あ'): 'あ',
-    ('う', 'え'): 'え',
-    ('う', 'い'): 'い',
-    ('う', 'お'): 'お',
-    ('う', 'う'): 'う',
-    ('く', 'あ'): 'か',
-    ('く', 'え'): 'け',
-    ('く', 'い'): 'き',
-    ('く', 'お'): 'こ',
-    ('く', 'う'): 'く',
-    ('ぐ', 'あ'): 'が',
-    ('ぐ', 'え'): 'げ',
-    ('ぐ', 'い'): 'ぎ',
-    ('ぐ', 'お'): 'ご',
-    ('ぐ', 'う'): 'ぐ',
-    ('す', 'あ'): 'さ',
-    ('す', 'え'): 'せ',
-    ('す', 'い'): 'し',
-    ('す', 'お'): 'そ',
-    ('す', 'う'): 'す',
-    ('ず', 'あ'): 'ざ',
-    ('ず', 'え'): 'ぜ',
-    ('ず', 'い'): 'じ',
-    ('ず', 'お'): 'ぞ',
-    ('ず', 'う'): 'ず',
-    ('つ', 'あ'): 'た',
-    ('つ', 'え'): 'て',
-    ('つ', 'い'): 'ち',
-    ('つ', 'お'): 'と',
-    ('つ', 'う'): 'つ',
-    ('づ', 'あ'): 'だ',
-    ('づ', 'え'): 'で',
-    ('づ', 'い'): 'ぢ',
-    ('づ', 'お'): 'ど',
-    ('づ', 'う'): 'づ',
-    ('ぬ', 'あ'): 'な',
-    ('ぬ', 'え'): 'ね',
-    ('ぬ', 'い'): 'に',
-    ('ぬ', 'お'): 'の',
-    ('ぬ', 'う'): 'ぬ',
-    ('ふ', 'あ'): 'は',
-    ('ふ', 'え'): 'へ',
-    ('ふ', 'い'): 'ひ',
-    ('ふ', 'お'): 'ほ',
-    ('ふ', 'う'): 'ふ',
-    ('ぶ', 'あ'): 'ば',
-    ('ぶ', 'え'): 'べ',
-    ('ぶ', 'い'): 'び',
-    ('ぶ', 'お'): 'ぼ',
-    ('ぶ', 'う'): 'ぶ',
-    ('ぷ', 'あ'): 'ぱ',
-    ('ぷ', 'え'): 'ぺ',
-    ('ぷ', 'い'): 'ぴ',
-    ('ぷ', 'お'): 'ぽ',
-    ('ぷ', 'う'): 'ぷ',
-    ('む', 'あ'): 'ま',
-    ('む', 'え'): 'め',
-    ('む', 'い'): 'み',
-    ('む', 'お'): 'も',
-    ('む', 'う'): 'む',
-    ('る', 'あ'): 'ら',
-    ('る', 'え'): 'れ',
-    ('る', 'い'): 'り',
-    ('る', 'お'): 'ろ',
-    ('る', 'う'): 'る'
-    }
 
 
 def romanji_to_hiragana(text):
@@ -204,34 +236,34 @@ def verb_type(verb):
 
 def negative_informal(verb):
     """
-    >>> negative_informal('ある')
+    >>> negative_informal(Verb('ある', ['godan verb'], []))
     'ない'
-    >>> negative_informal('たべる')
+    >>> negative_informal(Verb('たべる', ['ichidan verb'], []))
     'たべない'
-    >>> negative_informal('わかる')
+    >>> negative_informal(Verb('わかる', ['godan verb'], []))
     'わからない'
-    >>> negative_informal('よぶ')
+    >>> negative_informal(Verb('よぶ', ['godan verb'], []))
     'よばない'
-    >>> negative_informal('かう')
+    >>> negative_informal(Verb('かう', ['godan verb'], []))
     'かわない'
-    >>> negative_informal('いく')
+    >>> negative_informal(Verb('いく', ['godan verb'], []))
     'いかない'
-    >>> negative_informal('いる')
+    >>> negative_informal(Verb('いる', ['ichidan verb'], []))
     'いない'
     """
-    if verb == 'する':
-        return 'しない'
-    elif verb == 'くる':
-        return 'こない'
-    elif verb[-2:] == 'ある':
-        return verb[:-2] + 'ない'
-    elif verb[-1] == 'う':
-        return verb[:-1] + 'わない'
-    elif verb_type(verb) == 'る':
-        return verb[:-1] + 'ない'
+    written = str(verb)
+    if verb.type == 'suru verb':
+        return written[:-2] + 'しない'
+    elif verb.type == 'kuru verb':
+        return written[:-2] + 'こない'
+    elif verb.reading[-2:] == 'ある':
+        return written[:-2] + 'ない'
+    elif verb.type == 'godan verb' and written[-1] == 'う':
+        return written[:-1] + 'わない'
+    elif verb.type == 'ichidan verb':
+        return written[:-1] + 'ない'
     else:
-        a_ending = _u_conjugated[(verb[-1], 'あ')]
-        return verb[:-1] + a_ending + 'ない'
+        return verb.conjugate('あ') + 'ない'
 
 
 def _formal_prefix(verb):
