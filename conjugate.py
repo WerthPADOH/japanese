@@ -21,7 +21,7 @@ class Verb(jisho.Entry):
         for pos in self.parts_of_speech:
             for vt in verb_types:
                 if vt in pos:
-                    self.type = vt
+                    self.type = vt[:-5]
                     break
             if self.type is not None:
                 break
@@ -35,6 +35,16 @@ class Verb(jisho.Entry):
         ending = self.reading[-1]
         replacement = self._u_conjugated[(ending, vowel)]
         return str(self)[:-1] + replacement
+
+    def formal_prefix(self):
+        if verb.type == 'suru':
+            return str(self)[:-2] + 'し'
+        elif verb.type == 'kuru':
+            return str(self)[:-2] + 'き'
+        elif verb.type == 'ichidan':
+            return str(self)[:-1]
+        else:
+            return verb.conjugate('い')
 
     _u_conjugated = {
         ('う', 'あ'): 'あ',
@@ -189,126 +199,69 @@ def hiragana_to_romanji(text):
     return ''.join(out)
 
 
-def verb_type(verb):
-    """
-    >>> verb_type('かう')
-    'う'
-    >>> verb_type('たべる')
-    'る'
-    >>> verb_type('わかる')
-    'う'
-    >>> verb_type('する')
-    >>> verb_type('くる')
-    """
-    exceptional_u = {
-        'かえる': '帰る',
-        'しゃべる': 'しゃべる',
-        'しる': '知る',
-        'はいる': '入る',
-        'きる': '切る',
-        'へる': '減る',
-        'あせる': '焦る',
-        'かぎる': '限る',
-        'ける': '蹴る',
-        'すべる': '滑る',
-        'にぎる': '握る',
-        'ねる': '練る',
-        'まいる': '参る',
-        'まじる': '交じる',
-        'あざける': '嘲る',
-        'くつがえる': '覆る',
-        'さえぎる': '遮る',
-        'ののしる': '罵る',
-        'ひねる': '捻る',
-        'ひるがえる': '翻る',
-        'めいる': '滅入る',
-        'よみがえる': '蘇る'
-        }
-    if verb in {'する', 'くる'}:
-        return None
-    elif verb[-1] != 'る' or verb in exceptional_u:
-        return 'う'
-    elif hiragana_to_romanji(verb[-2])[-1] in {'a', 'o', 'u'}:
-        return 'う'
-    else:
-        return 'る'
-
-
 def negative_informal(verb):
     """
     >>> negative_informal(Verb('ある', ['godan verb'], []))
     'ない'
-    >>> negative_informal(Verb('たべる', ['ichidan verb'], []))
-    'たべない'
+    >>> negative_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べない'
     >>> negative_informal(Verb('わかる', ['godan verb'], []))
     'わからない'
     >>> negative_informal(Verb('よぶ', ['godan verb'], []))
     'よばない'
-    >>> negative_informal(Verb('かう', ['godan verb'], []))
-    'かわない'
-    >>> negative_informal(Verb('いく', ['godan verb'], []))
-    'いかない'
+    >>> negative_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買わない'
+    >>> negative_informal(Verb('いく', ['godan verb'], [], kanji='行く'))
+    '行かない'
     >>> negative_informal(Verb('いる', ['ichidan verb'], []))
     'いない'
     """
     written = str(verb)
-    if verb.type == 'suru verb':
+    if verb.type == 'suru':
         return written[:-2] + 'しない'
-    elif verb.type == 'kuru verb':
+    elif verb.type == 'kuru':
         return written[:-2] + 'こない'
     elif verb.reading[-2:] == 'ある':
         return written[:-2] + 'ない'
-    elif verb.type == 'godan verb' and written[-1] == 'う':
+    elif verb.type == 'godan' and written[-1] == 'う':
         return written[:-1] + 'わない'
-    elif verb.type == 'ichidan verb':
+    elif verb.type == 'ichidan':
         return written[:-1] + 'ない'
     else:
         return verb.conjugate('あ') + 'ない'
 
 
-def _formal_prefix(verb):
-    if verb == 'する':
-        return 'し'
-    elif verb == 'くる':
-        return 'き'
-    elif verb_type(verb) == 'る':
-        return verb[:-1]
-    else:
-        i_ending = _u_conjugated[(verb[-1], 'い')]
-        return verb[:-1] + i_ending
-
-
 def negative_formal(verb):
     """
-    >>> negative_formal('ある')
+    >>> negative_formal(Verb('ある', ['godan verb'], []))
     'ありません'
-    >>> negative_formal('たべる')
-    'たべません'
-    >>> negative_formal('わかる')
+    >>> negative_formal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べません'
+    >>> negative_formal(Verb('わかる', ['godan verb'], []))
     'わかりません'
-    >>> negative_formal('よぶ')
+    >>> negative_formal(Verb('よぶ', ['godan verb'], []))
     'よびません'
-    >>> negative_formal('かう')
-    'かいません'
+    >>> negative_formal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買いません'
     """
-    return _formal_prefix(verb) + 'ません'
+    return verb.formal_prefix() + 'ません'
 
 
 def past_informal(verb):
     """
-    >>> past_informal('ある')
+    >>> past_informal(Verb('ある', ['godan verb'], []))
     'あった'
-    >>> past_informal('たべる')
-    'たべた'
-    >>> past_informal('わかる')
+    >>> past_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べた'
+    >>> past_informal(Verb('わかる', ['godan verb'], []))
     'わかった'
-    >>> past_informal('よぶ')
+    >>> past_informal(Verb('よぶ', ['godan verb'], []))
     'よんだ'
-    >>> past_informal('かう')
-    'かった'
-    >>> past_informal('きく')
+    >>> past_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買った'
+    >>> past_informal(Verb('きく', ['godan verb'], []))
     'きいた'
-    >>> past_informal('およぐ')
+    >>> past_informal(Verb('およぐ', ['godan verb'], []))
     'およいだ'
     """
     if verb == 'する':
@@ -333,24 +286,24 @@ def past_informal(verb):
 
 def past_negative_informal(verb):
     """
-    >>> past_negative_informal('ある')
+    >>> past_negative_informal(Verb('ある', ['godan verb'], []))
     'なかった'
-    >>> past_negative_informal('たべる')
-    'たべなかった'
-    >>> past_negative_informal('わかる')
+    >>> past_negative_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べなかった'
+    >>> past_negative_informal(Verb('わかる', ['godan verb'], []))
     'わからなかった'
-    >>> past_negative_informal('よぶ')
+    >>> past_negative_informal(Verb('よぶ', ['godan verb'], []))
     'よばなかった'
-    >>> past_negative_informal('かう')
-    'かわなかった'
-    >>> past_negative_informal('くる')
+    >>> past_negative_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買わなかった'
+    >>> past_negative_informal(Verb('くる', ['kuru verb'], []))
     'こなかった'
-    >>> past_negative_informal('きく')
+    >>> past_negative_informal(Verb('きく', ['godan verb'], []))
     'きかなかった'
-    >>> past_negative_informal('およぐ')
+    >>> past_negative_informal(Verb('およぐ', ['godan verb'], []))
     'およがなかった'
-    >>> past_negative_informal('いく')
-    'いかなかった'
+    >>> past_negative_informal(Verb('いく', ['godan verb'], [], kanji='行く'))
+    '行かなかった'
     """
     negative = negative_informal(verb)
     return negative[:-1] + 'かった'
@@ -358,68 +311,68 @@ def past_negative_informal(verb):
 
 def volitional_informal(verb):
     """
-    >>> volitional_informal('たべる')
-    'たべよう'
-    >>> volitional_informal('はなす')
-    'はなそう'
-    >>> volitional_informal('しんじる')
-    'しんじよう'
-    >>> volitional_informal('かう')
-    'かおう'
-    >>> volitional_informal('いく')
-    'いこう'
+    >>> volitional_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べよう'
+    >>> volitional_informal(Verb('はなす', ['godan verb'], [], kanji='話す'))
+    '話そう'
+    >>> volitional_informal(Verb('しんじる', ['ichidan verb'], [], kanji='信じる'))
+    '信じよう'
+    >>> volitional_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買おう'
+    >>> volitional_informal(Verb('いく', ['godan verb'], [], kanji='行く'))
+    '行こう'
     """
-    if verb == 'する':
-        return 'しよう'
-    elif verb == 'くる':
-        return 'こよう'
-    elif verb_type(verb) == 'る':
-        return verb[:-1] + 'よう'
+    written = str(verb)
+    if verb.type == 'suru':
+        return written[:-2] + 'しよう'
+    elif verb.type == 'kuru':
+        return written[:-2] + 'こよう'
+    elif verb.type == 'ichidan':
+        return written[:-1] + 'よう'
     else:
-        o_ending = _u_conjugated[(verb[-1], 'お')]
-        return verb[:-1] + o_ending + 'う'
+        return verb.conjugate('お') + 'う'
 
 
 def volitional_formal(verb):
     """
-    >>> volitional_formal('たべる')
-    'たべましょう'
-    >>> volitional_formal('はなす')
-    'はなしましょう'
-    >>> volitional_formal('しんじる')
-    'しんじましょう'
-    >>> volitional_formal('かう')
-    'かいましょう'
-    >>> volitional_formal('いく')
-    'いきましょう'
+    >>> volitional_formal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べましょう'
+    >>> volitional_formal(Verb('はなす', ['godan verb'], [], kanji='話す'))
+    '話しましょう'
+    >>> volitional_formal(Verb('しんじる', ['ichidan verb'], [], kanji='信じる'))
+    '信じましょう'
+    >>> volitional_formal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買いましょう'
+    >>> volitional_formal(Verb('いく', ['godan verb'], [], kanji='行く'))
+    '行きましょう'
     """
-    return _formal_prefix(verb) + 'ましょう'
+    return verb.formal_prefix() + 'ましょう'
 
 
 def potential_informal(verb):
     """
-    >>> potential_informal('たべる')
-    'たべられる'
-    >>> potential_informal('はなす')
-    'はなせる'
-    >>> potential_informal('しんじる')
-    'しんじられる'
-    >>> potential_informal('かう')
-    'かえる'
-    >>> potential_informal('いく')
-    'いける'
-    >>> potential_informal('とる')
-    'とれる'
+    >>> potential_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    '食べられる'
+    >>> potential_informal(Verb('はなす', ['godan verb'], [], kanji='話す'))
+    '話せる'
+    >>> potential_informal(Verb('しんじる', ['ichidan verb'], [], kanji='信じる'))
+    '信じられる'
+    >>> potential_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    '買える'
+    >>> potential_informal(Verb('いく', ['godan verb'], [], kanji='行く'))
+    '行ける'
+    >>> potential_informal(Verb('とる', ['ichidan verb'], [], kanji='取る'))
+    '取れる'
     """
-    if verb == 'する':
-        return 'できる'
-    elif verb == 'くる':
-        return 'こられる'
-    elif verb_type(verb) == 'る':
-        return verb[:-1] + 'られる'
+    written = str(verb)
+    if verb.type == 'suru':
+        return written[:-2] + 'できる'
+    elif verb.type == 'kuru':
+        return written[:-2] + 'こられる'
+    elif verb.type == 'ichidan':
+        return written[:-1] + 'られる'
     else:
-        e_ending = _u_conjugated[(verb[-1], 'え')]
-        return verb[:-1] + e_ending + 'る'
+        return verb.conjugate('え') + 'る'
 
 
 if __name__ == '__main__':
