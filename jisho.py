@@ -139,4 +139,4 @@ class Jisho(collections.abc.MutableSet):
 
 if __name__ == '__main__':
     tree = ElementTree.parse('JMdict_e.xml')
-    jisho = Jisho(Entry.from_node(node) for node in tree.getroot())
+    dictionary = Jisho(Entry.from_node(node) for node in tree.getroot())
