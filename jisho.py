@@ -26,15 +26,41 @@ def decode_chars(text):
 
 
 @dataclass
+class Prevalence:
+    news: int = None
+    ichimango: int = None
+    loanword: int = None
+    special: int = None
+    top_n: int = None
+
+    @classmethod
+    def from_nodes(cls, nodes):
+        out = cls()
+        if not nodes:
+            return out
+        node_values = (n.text for n in nodes)
+        for nv in node_values:
+            if nv.startswith('news'):
+                out.news = int(nv[4:])
+            elif nv.startswith('ichi'):
+                out.ichimango = int(nv[4:])
+            elif nv.startswith('gai'):
+                out.ichimango = int(nv[3:])
+            elif nv.startswith('spec'):
+                out.special = int(nv[4:])
+            elif nv.startswith('nf'):
+                out.top_n = 500 * int(nv[2:])
+        return out
+
+
+@dataclass
 class Entry:
     reading: str
     parts_of_speech: tuple
     meanings: tuple
     kanji: str = ''
     kanji_alternates: tuple = tuple()
-    prev_level: int = None
-    prev_class: str = ''
-    freq_rank: int = None
+    prevalence: Prevalence = Prevalence()
 
     @classmethod
     def from_node(cls, node):
@@ -57,15 +83,17 @@ class Entry:
             meanings=meanings
             )
         kanji_nodes = node.findall('k_ele')
+        prev_nodes = None
         if kanji_nodes:
             entry.kanji = decode_chars(kanji_nodes[0].find('keb').text)
             entry.kanji_alternates = tuple(
                 decode_chars(n.find('keb').text) for n in kanji_nodes[1:]
                 )
-            prev_node = kanji_nodes[0].find('ke_pri')
-            if prev_node is not None:
-                entry.prev_level = int(prev_node.text[-1])
-                entry.prev_class = prev_node.text[:-1]
+            prev_nodes = kanji_nodes[0].findall('ke_pri')
+            entry.prevalence = Prevalence.from_nodes(prev_nodes)
+        else:
+            prev_nodes = read_node.findall('reb/re_pri')
+            entry.prevalence = Prevalence.from_nodes(prev_nodes)
         return entry
 
     def __hash__(self):
