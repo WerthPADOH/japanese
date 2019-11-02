@@ -7,12 +7,14 @@ Papers relating to project:
     http://www.edrdg.org/~jwb/papers.html
 """
 import collections
+import os
 import re
 from dataclasses import dataclass
 from xml.etree import ElementTree
 
 
 _code_values = dict()
+_dict_file = os.path.join(os.path.dirname(__file__), 'JMdict_e.xml')
 
 
 def decode_chars(text):
@@ -83,7 +85,6 @@ class Entry:
             meanings=meanings
             )
         kanji_nodes = node.findall('k_ele')
-        prev_nodes = None
         if kanji_nodes:
             entry.kanji = decode_chars(kanji_nodes[0].find('keb').text)
             entry.kanji_alternates = tuple(
@@ -165,6 +166,9 @@ class Jisho(collections.abc.MutableSet):
         return self._by_kanji.get(kanji, set())
 
 
+def create_dictionary():
+    tree = ElementTree.parse(_dict_file)
+    return Jisho(Entry.from_node(node) for node in tree.getroot())
+
 if __name__ == '__main__':
-    tree = ElementTree.parse('JMdict_e.xml')
-    dictionary = Jisho(Entry.from_node(node) for node in tree.getroot())
+    dictionary = create_dictionary()
