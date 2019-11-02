@@ -2,3 +2,4 @@
 *.gz
 JMdict_e.xml
 __pycache__/*
+.idea/*
