@@ -32,12 +32,19 @@ def int_to_kanji(i: int):
     '十二億三千四百五十六万七千八百九十'
     >>> int_to_kanji(10**8)
     '一億'
+    >>> int_to_kanji(-569)
+    'マイナス五百六十九'
+    >>> int_to_kanji(-0)
+    'ゼロ'
     """
+    out = ''
+    if i < 0:
+        out = 'マイナス'
+        i = -i
     if i in {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100, 1000}:
-        return number_kanji[i]
+        return out + number_kanji[i]
     remainder = i
     threshholds = [10**12, 10**8, 10**4, 1000, 100, 10]
-    out = ''
     for n in threshholds:
         factor, remainder = divmod(remainder, n)
         if factor:
