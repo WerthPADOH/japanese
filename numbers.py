@@ -1,3 +1,6 @@
+import datetime
+
+
 number_kanji = {
     0: 'ゼロ',
     1: '一',
@@ -56,6 +59,23 @@ def int_to_kanji(i: int):
             break
     if remainder:
         out += number_kanji[remainder]
+    return out
+
+
+def translate_time(dt):
+    """
+    >>> t = datetime.date.fromisoformat('2019-11-06')
+    >>> translate_time(t)
+    '2019年11月6日'
+    >>> s = datetime.datetime.fromisoformat('1788-12-31T05:32:44')
+    >>> translate_time(s)
+    '1788年12月31日5時32分44秒'
+    """
+    out = f'{dt.year}年{dt.month}月{dt.day}日'
+    try:
+        out += f'{dt.hour}時{dt.minute}分{dt.second}秒'
+    except AttributeError:
+        pass
     return out
 
 
