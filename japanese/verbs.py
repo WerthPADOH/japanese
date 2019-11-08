@@ -35,7 +35,7 @@ class Verb(jisho.Entry):
         replacement = self._u_conjugated[(ending, vowel)]
         return str(self)[:-1] + replacement
 
-    def formal_prefix(self):
+    def stem(self):
         if self.type == 'suru':
             return str(self)[:-2] + 'し'
         elif self.type == 'kuru':
@@ -162,7 +162,7 @@ def negative_formal(verb):
     >>> negative_formal(Verb('かう', ['godan verb'], [], kanji='買う'))
     '買いません'
     """
-    return verb.formal_prefix() + 'ません'
+    return verb.stem() + 'ません'
 
 
 def past_informal(verb):
@@ -275,7 +275,7 @@ def volitional_formal(verb):
     >>> volitional_formal(Verb('いく', ['godan verb'], [], kanji='行く'))
     '行きましょう'
     """
-    return verb.formal_prefix() + 'ましょう'
+    return verb.stem() + 'ましょう'
 
 
 def potential_informal(verb):
