@@ -45,6 +45,32 @@ class Verb(jisho.Entry):
         else:
             return self.conjugate('い')
 
+    def te_form(self):
+        written = str(self)
+        if self.type == 'suru':
+            return 'して'
+        elif self.type == 'kuru':
+            if written[-2:] == '来る':
+                return written[:-2] + '来て'
+            else:
+                return written[:-2] + 'きて'
+        elif self.kanji.endswith('行く'):
+            return written[:-2] + '行って'
+        elif self.reading == 'いく':
+            return 'いって'
+        elif self.type == 'ichidan':
+            return written[:-1] + 'て'
+        elif written[-1] == 'す':
+            return written[:-1] + 'して'
+        elif written[-1] == 'く':
+            return written[:-1] + 'いて'
+        elif written[-1] == 'ぐ':
+            return written[:-1] + 'いで'
+        elif written[-1] in {'む', 'ぶ', 'ぬ'}:
+            return written[:-1] + 'んで'
+        elif written[-1] in {'る', 'う', 'つ'}:
+            return written[:-1] + 'って'
+
     _u_conjugated = {
         ('う', 'あ'): 'あ',
         ('う', 'え'): 'え',
@@ -182,30 +208,11 @@ def past_informal(verb):
     >>> past_informal(Verb('およぐ', ['godan verb'], [], kanji='泳ぐ'))
     '泳いだ'
     """
-    written = str(verb)
-    if verb.type == 'suru':
-        return 'した'
-    elif verb.type == 'kuru':
-        if written[-2:] == '来る':
-            return written[:-2] + '来た'
-        else:
-            return written[:-2] + 'きた'
-    elif verb.kanji.endswith('行く'):
-        return written[:-2] + '行った'
-    elif verb.reading == 'いく':
-        return 'いった'
-    elif verb.type == 'ichidan':
-        return written[:-1] + 'た'
-    elif written[-1] == 'す':
-        return written[:-1] + 'した'
-    elif written[-1] == 'く':
-        return written[:-1] + 'いた'
-    elif written[-1] == 'ぐ':
-        return written[:-1] + 'いだ'
-    elif written[-1] in {'む', 'ぶ', 'ぬ'}:
-        return written[:-1] + 'んだ'
-    elif written[-1] in {'る', 'う', 'つ'}:
-        return written[:-1] + 'った'
+    tf = verb.te_form()
+    if tf[-1] == 'て':
+        return tf[:-1] + 'た'
+    elif tf[-1] == 'で':
+        return tf[:-1] + 'だ'
 
 
 def past_negative_informal(verb):
