@@ -3,8 +3,8 @@ import jisho
 
 
 class ConjugationError(Exception):
-    def __init__(self, form, verb):
-        message = 'Unable to conjugate {} form of {}'.format(form, verb)
+    def __init__(self, verb):
+        message = f'Unable to conjugate {verb.type} form of {verb}'
         super().__init__(message)
 
 
@@ -42,8 +42,10 @@ class Verb(jisho.Entry):
             return str(self)[:-2] + 'き'
         elif self.type == 'ichidan':
             return str(self)[:-1]
-        else:
+        elif self.type == 'godan':
             return self.conjugate('い')
+        else:
+            raise ConjugationError(self)
 
     def te_form(self):
         written = str(self)
@@ -60,16 +62,19 @@ class Verb(jisho.Entry):
             return 'いって'
         elif self.type == 'ichidan':
             return written[:-1] + 'て'
-        elif written[-1] == 'す':
-            return written[:-1] + 'して'
-        elif written[-1] == 'く':
-            return written[:-1] + 'いて'
-        elif written[-1] == 'ぐ':
-            return written[:-1] + 'いで'
-        elif written[-1] in {'む', 'ぶ', 'ぬ'}:
-            return written[:-1] + 'んで'
-        elif written[-1] in {'る', 'う', 'つ'}:
-            return written[:-1] + 'って'
+        elif self.type == 'godan':
+            if written[-1] == 'す':
+                return written[:-1] + 'して'
+            elif written[-1] == 'く':
+                return written[:-1] + 'いて'
+            elif written[-1] == 'ぐ':
+                return written[:-1] + 'いで'
+            elif written[-1] in {'む', 'ぶ', 'ぬ'}:
+                return written[:-1] + 'んで'
+            elif written[-1] in {'る', 'う', 'つ'}:
+                return written[:-1] + 'って'
+        else:
+            raise ConjugationError(self)
 
     _u_conjugated = {
         ('う', 'あ'): 'あ',
@@ -171,8 +176,10 @@ def negative_informal(verb):
         return written[:-1] + 'わない'
     elif verb.type == 'ichidan':
         return written[:-1] + 'ない'
-    else:
+    elif verb.type == 'godan':
         return verb.conjugate('あ') + 'ない'
+    else:
+        raise ConjugationError(verb)
 
 
 def negative_formal(verb):
@@ -265,8 +272,10 @@ def volitional_informal(verb):
             return written[:-2] + 'こよう'
     elif verb.type == 'ichidan':
         return written[:-1] + 'よう'
-    else:
+    elif verb.type == 'godan':
         return verb.conjugate('お') + 'う'
+    else:
+        raise ConjugationError(verb)
 
 
 def volitional_formal(verb):
@@ -318,8 +327,10 @@ def potential_informal(verb):
             return written[:-2] + 'こられる'
     elif verb.type == 'ichidan':
         return written[:-1] + 'られる'
-    else:
+    elif verb.type == 'godan':
         return verb.conjugate('え') + 'る'
+    else:
+        raise ConjugationError(verb)
 
 
 def continuing_informal(verb):
