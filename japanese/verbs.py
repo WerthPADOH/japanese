@@ -333,21 +333,21 @@ def potential_informal(verb):
         raise ConjugationError(verb)
 
 
-def continuing_informal(verb):
+def progressive_informal(verb):
     """
-    >>> continuing_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
+    >>> progressive_informal(Verb('たべる', ['ichidan verb'], [], kanji='食べる'))
     '食べている'
-    >>> continuing_informal(Verb('はなす', ['godan verb'], [], kanji='話す'))
+    >>> progressive_informal(Verb('はなす', ['godan verb'], [], kanji='話す'))
     '話している'
-    >>> continuing_informal(Verb('しんじる', ['ichidan verb'], [], kanji='信じる'))
+    >>> progressive_informal(Verb('しんじる', ['ichidan verb'], [], kanji='信じる'))
     '信じている'
-    >>> continuing_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
+    >>> progressive_informal(Verb('かう', ['godan verb'], [], kanji='買う'))
     '買っている'
-    >>> continuing_informal(Verb('いく', ['godan verb'], [], kanji='行く'))
+    >>> progressive_informal(Verb('いく', ['godan verb'], [], kanji='行く'))
     '行っている'
-    >>> continuing_informal(Verb('とる', ['godan verb'], [], kanji='取る'))
+    >>> progressive_informal(Verb('とる', ['godan verb'], [], kanji='取る'))
     '取っている'
-    >>> continuing_informal(Verb('しぬ', ['godan verb'], [], kanji='死ぬ'))
+    >>> progressive_informal(Verb('しぬ', ['godan verb'], [], kanji='死ぬ'))
     '死んでいる'
     """
     return verb.te_form() + 'いる'
