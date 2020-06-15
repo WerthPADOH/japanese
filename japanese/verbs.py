@@ -28,6 +28,8 @@ class Verb(jisho.Entry):
             'nidan verb', 'yodan verb'
             )
         self.type = None
+        self.suffix = self.reading[-1]
+        self.inflections = frozenset((Inflection.affirmative, Inflection.informal))
         for pos in self.parts_of_speech:
             if pos.endswith(' verb'):
                 self.type = VerbType(pos)
@@ -41,8 +43,7 @@ class Verb(jisho.Entry):
         return cls(**values)
 
     def conjugate(self, vowel):
-        ending = self.reading[-1]
-        replacement = self._u_conjugated[(ending, vowel)]
+        replacement = self._u_conjugated[(self.suffix, vowel)]
         return str(self)[:-1] + replacement
 
     def stem(self):
