@@ -1,5 +1,16 @@
+import enum
 import unicodedata
 import jisho
+
+
+class VerbType(enum.Enum):
+    godan = 'godan verb'
+    ichidan = 'ichidan verb'
+    kuru = 'kuru verb'
+    suru = 'suru verb'
+    su = 'su verb'
+    nidan = 'nidan verb'
+    yodan = 'yodan verb'
 
 
 class ConjugationError(Exception):
@@ -18,10 +29,9 @@ class Verb(jisho.Entry):
             )
         self.type = None
         for pos in self.parts_of_speech:
-            for vt in verb_types:
-                if vt in pos:
-                    self.type = vt[:-5]
-                    break
+            if pos.endswith(' verb'):
+                self.type = VerbType(pos)
+                break
             if self.type is not None:
                 break
 
@@ -36,22 +46,22 @@ class Verb(jisho.Entry):
         return str(self)[:-1] + replacement
 
     def stem(self):
-        if self.type == 'suru':
+        if self.type == VerbType.suru:
             return str(self)[:-2] + 'し'
-        elif self.type == 'kuru':
+        elif self.type == VerbType.kuru:
             return str(self)[:-2] + 'き'
-        elif self.type == 'ichidan':
+        elif self.type == VerbType.ichidan:
             return str(self)[:-1]
-        elif self.type == 'godan':
+        elif self.type == VerbType.godan:
             return self.conjugate('い')
         else:
             raise ConjugationError(self)
 
     def te_form(self):
         written = str(self)
-        if self.type == 'suru':
+        if self.type == VerbType.suru:
             return 'して'
-        elif self.type == 'kuru':
+        elif self.type == VerbType.kuru:
             if written[-2:] == '来る':
                 return written[:-2] + '来て'
             else:
@@ -60,9 +70,9 @@ class Verb(jisho.Entry):
             return written[:-2] + '行って'
         elif self.reading == 'いく':
             return 'いって'
-        elif self.type == 'ichidan':
+        elif self.type == VerbType.ichidan:
             return written[:-1] + 'て'
-        elif self.type == 'godan':
+        elif self.type == VerbType.godan:
             if written[-1] == 'す':
                 return written[:-1] + 'して'
             elif written[-1] == 'く':
@@ -162,20 +172,20 @@ class Verb(jisho.Entry):
         'いない'
         """
         written = str(self)
-        if self.type == 'suru':
+        if self.type == VerbType.suru:
             return written[:-2] + 'しない'
-        elif self.type == 'kuru':
+        elif self.type == VerbType.kuru:
             if written[-2:] == '来る':
                 return written[:-2] + '来ない'
             else:
                 return written[:-2] + 'こない'
         elif self.reading[-2:] == 'ある':
             return written[:-2] + 'ない'
-        elif self.type == 'godan' and written[-1] == 'う':
+        elif self.type == VerbType.godan and written[-1] == 'う':
             return written[:-1] + 'わない'
-        elif self.type == 'ichidan':
+        elif self.type == VerbType.ichidan:
             return written[:-1] + 'ない'
-        elif self.type == 'godan':
+        elif self.type == VerbType.godan:
             return self.conjugate('あ') + 'ない'
         else:
             raise ConjugationError(self)
@@ -258,16 +268,16 @@ class Verb(jisho.Entry):
         '行こう'
         """
         written = str(self)
-        if self.type == 'suru':
+        if self.type == VerbType.suru:
             return written[:-2] + 'しよう'
-        elif self.type == 'kuru':
+        elif self.type == VerbType.kuru:
             if written[-2:] == '来る':
                 return written[:-2] + '来よう'
             else:
                 return written[:-2] + 'こよう'
-        elif self.type == 'ichidan':
+        elif self.type == VerbType.ichidan:
             return written[:-1] + 'よう'
-        elif self.type == 'godan':
+        elif self.type == VerbType.godan:
             return self.conjugate('お') + 'う'
         else:
             raise ConjugationError(self)
@@ -308,19 +318,19 @@ class Verb(jisho.Entry):
         """
         written = str(self)
         has_kanji = any(unicodedata.name(char)[:3] == 'CJK' for char in written)
-        if self.type == 'suru':
+        if self.type == VerbType.suru:
             if has_kanji:
                 return written[:-2] + '出来る'
             else:
                 return written[:-2] + 'できる'
-        elif self.type == 'kuru':
+        elif self.type == VerbType.kuru:
             if written[-2:] == '来る':
                 return written[:-2] + '来られる'
             else:
                 return written[:-2] + 'こられる'
-        elif self.type == 'ichidan':
+        elif self.type == VerbType.ichidan:
             return written[:-1] + 'られる'
-        elif self.type == 'godan':
+        elif self.type == VerbType.godan:
             return self.conjugate('え') + 'る'
         else:
             raise ConjugationError(self)
